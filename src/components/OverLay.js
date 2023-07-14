@@ -54,7 +54,7 @@ function Intro({ config }) {
               define your own style.
             </p>
             <button
-              style={{ background: 'black' }}
+              style={{ background: 'black',zIndex:99,position:"relative"}}
               onClick={() => (state.intro = false)}>
               CUSTOMIZE IT 
             </button>
@@ -76,7 +76,7 @@ function Customizer({ config }) {
             <div
               key={color}
               className="circle"
-              style={{ background: color }}
+              style={{ background: color,zIndex:"99",position:"relative" }}
               onClick={() => (state.selectedColor = color)}></div>
           ))}
         </div>
@@ -96,7 +96,7 @@ function Customizer({ config }) {
 
         <button
           className="share"
-          style={{ background: snap.selectedColor }}
+          style={{ background: snap.selectedColor,zIndex:"99",position:"absolute"}}
           onClick={() => {
             const link = document.createElement('a')
             link.setAttribute('download', 'canvas.png')
@@ -114,7 +114,7 @@ function Customizer({ config }) {
 
         <button
           className="exit"
-          style={{ background: snap.selectedColor }}
+          style={{ background: snap.selectedColor ,zIndex:"99",position:"absolute"}}
           onClick={() => (state.intro = true)}>
           GO BACK
         </button>

@@ -1,5 +1,7 @@
-import { useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+"use client";
+
+import { useRef ,useEffect,useState} from 'react'
+import { useFrame, useThree ,Canvas} from '@react-three/fiber'
 import { easing } from 'maath'
 
 import {
@@ -9,80 +11,115 @@ import {
   AccumulativeShadows,
   RandomizedLight,
   useTexture,
-  Decal,
   Text
 } from '@react-three/drei'
 import { useSnapshot } from 'valtio'
 import { state } from './store'
 
-export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
-  
-  <Canvas
-  style={{height:"100vh"}}
-    shadows
-    gl={{ preserveDrawingBuffer: true }}
-    camera={{ position, fov }}
-    // eventSource={document.getElementById('root')}
-    eventPrefix="client">
-    <ambientLight intensity={0.5} />
-    <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/potsdamer_platz_1k.hdr" />
+export const App = ({ position = [0, 0, 2.5], fov = 25 }) => {
+  return (
+    <Canvas
+      style={{ height: '100vh',zIndex:9}}
+      shadows
+      gl={{ preserveDrawingBuffer: true }}
+      camera={{ position, fov }}
+      eventPrefix="client"
+    >
+      <ambientLight intensity={0.5} />
+      <Environment files="https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/potsdamer_platz_1k.hdr" />
 
-    <CameraRig>
-      <Backdrop />
-      <Center>
-        <Shirt />
-      </Center>
-    </CameraRig>
-  </Canvas>
-)
+      <CameraRig>
+        <Backdrop />
+        <Center>
+          <Shirt />
+        </Center>
+      </CameraRig>
+    </Canvas>
+  )
+}
+
 
 function Shirt(props) {
-  const snap = useSnapshot(state)
+  const snap = useSnapshot(state);
+  const shirtRef = useRef();
+  const { viewport } = useThree();
+  const { width } = viewport;
 
-  const texture = useTexture(`/${snap.selectedDecal}.png`)
+  const texture = useTexture(`/${snap.selectedDecal}.png`);
+  const { nodes, materials } = useGLTF('/shirt_baked_collapsed.glb');
 
-  const { nodes, materials } = useGLTF('/shirt_baked_collapsed.glb')
+  const [name, setName] = useState(state.name || 'S K Y');
+
+  const handleClick = () => {
+    const newName = prompt('Enter a new name');
+    if (newName) {
+      state.name = newName;
+      localStorage.setItem('shirtName', newName); // Save the name in local storage
+      setName(newName); // Update the displayed name instantly
+    }
+  };
+
+  useEffect(() => {
+    const savedName = localStorage.getItem('shirtName');
+    if (savedName) {
+      state.name = savedName; // Load the name from local storage
+      setName(savedName); // Update the displayed name instantly
+    }
+  }, []);
+
+  useFrame(({ mouse }) => {
+    const shirt = shirtRef.current;
+
+    if (shirt) {
+      const { x, y } = mouse;
+      const mouseX = (x / width) * 2 - 2;
+      const mouseY = (y / width) * 0.1;
+
+      const maxRotationY = Math.PI / 20; // Maximum rotation angle for y-axis (36 degrees)
+      const maxRotationX = Math.PI / 5; // Maximum rotation angle for x-axis (36 degrees)
+
+      shirt.rotation.y = Math.max(Math.min((mouseX * Math.PI) + Math.PI, maxRotationY), -maxRotationY);
+      shirt.rotation.x = Math.max(Math.min(mouseY * maxRotationX, maxRotationX), -maxRotationX);
+    }
+  });
 
   useFrame((state, delta) =>
     easing.dampC(materials.lambert1.color, snap.selectedColor, 0.25, delta)
-  )
+  );
 
   return (
     <mesh
+      ref={shirtRef}
       castShadow
       geometry={nodes.T_Shirt_male.geometry}
       material={materials.lambert1}
       material-roughness={1}
       {...props}
-      dispose={null}>
-     {/* <Decal
+      dispose={null}
+    >
+      <Text
         position={[0, 0.04, 0.15]}
         rotation={[0, 0, 0]}
-        scale={0.15}
-        opacity={0.7}
-        
+        scale={0.18}
+        color="black"
+        fontSize={0.1}
+        maxWidth={0.4}
+        lineHeight={1}
+        letterSpacing={0.02}
+        textAlign="center"
+        anchorX="center"
+        anchorY="middle"
+        depthOffset={-1}
+        onClick={handleClick}
+        onPointerOver={(e) => (e.intersections.length ? (document.body.style.cursor = 'pointer') : null)}
+        onPointerOut={(e) => (document.body.style.cursor = 'auto')}
       >
-            </Decal> */}
-
-    <Text
-              position={[0, 0.04, 0.15]}
-              rotation={[0, 0, 0]}
-              scale={0.18}
-              color="black"
-          fontSize={0.1}
-          maxWidth={0.4}
-          lineHeight={1}
-          letterSpacing={0.02}
-          textAlign="center"
-          anchorX="center"
-          anchorY="middle"
-          depthOffset={-1}
-        >
-          S K Y
-        </Text>
+        {name}
+      </Text>
     </mesh>
-  )
+  );
 }
+
 
 function Backdrop() {
   const shadows = useRef()
@@ -104,7 +141,8 @@ function Backdrop() {
       alphaTest={0.85}
       scale={10}
       rotation={[Math.PI / 2, 0, 0]}
-      position={[0, 0, -0.14]}>
+      position={[0, 0, -0.14]}
+    >
       <RandomizedLight
         amount={4}
         radius={9}
@@ -125,16 +163,24 @@ function Backdrop() {
 
 function CameraRig({ children }) {
   const group = useRef()
+  const { camera } = useThree()
 
   const snap = useSnapshot(state)
 
   useFrame((state, delta) => {
     easing.damp3(
-      state.camera.position,
+      camera.position,
       [snap.intro ? -state.viewport.width / 4 : 0, 0, 2],
       0.25,
       delta
     )
+
+    if (state.mouse.buttons === 1) {
+      const { x, y } = state.mouse
+      camera.rotation.y -= x * 0.01
+      camera.rotation.x -= y * 0.01
+    }
+
     easing.dampE(
       group.current.rotation,
       [state.pointer.y / 10, -state.pointer.x / 5, 0],
@@ -142,8 +188,8 @@ function CameraRig({ children }) {
       delta
     )
   })
+
   return <group ref={group}>{children}</group>
 }
 
-useGLTF.preload('/shirt_baked_collapsed.glb');
-;['/react.png', '/three2.png', '/pmndrs.png'].forEach(useTexture.preload);
+useGLTF.preload('/shirt_baked_collapsed.glb')
