@@ -38,7 +38,6 @@ export const App = ({ position = [0, 0, 2.5], fov = 25 }) => {
   )
 }
 
-
 function Shirt(props) {
   const snap = useSnapshot(state);
   const shirtRef = useRef();
@@ -49,13 +48,21 @@ function Shirt(props) {
   const { nodes, materials } = useGLTF('/shirt_baked_collapsed.glb');
 
   const [name, setName] = useState(state.name || 'S K Y');
+  const [fontSize, setFontSize] = useState(0.1);
+  const [textColor, setTextColor] = useState('black');
 
   const handleClick = () => {
-    const newName = prompt('Enter a new name');
-    if (newName) {
-      state.name = newName;
-      localStorage.setItem('shirtName', newName); // Save the name in local storage
-      setName(newName); // Update the displayed name instantly
+    const newSize = prompt('Enter a new font size');
+    if (newSize) {
+      const parsedSize = parseFloat(newSize);
+      if (!isNaN(parsedSize)) {
+        setFontSize(parsedSize);
+      }
+    }
+
+    const newColor = prompt('Enter a new text color');
+    if (newColor) {
+      setTextColor(newColor);
     }
   };
 
@@ -101,8 +108,8 @@ function Shirt(props) {
         position={[0, 0.04, 0.15]}
         rotation={[0, 0, 0]}
         scale={0.18}
-        color="black"
-        fontSize={0.1}
+        color={textColor}
+        fontSize={fontSize}
         maxWidth={0.4}
         lineHeight={1}
         letterSpacing={0.02}
