@@ -3,7 +3,7 @@
 import { Logo } from '@pmndrs/branding'
 
 import { useSnapshot } from 'valtio'
-import { state } from '../pages/store'
+import { state } from './store'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Overlay() {

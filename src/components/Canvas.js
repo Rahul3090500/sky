@@ -13,7 +13,7 @@ import {
   Text
 } from '@react-three/drei'
 import { useSnapshot } from 'valtio'
-import { state } from '../pages/store'
+import { state } from './store'
 
 export const App = ({ position = [0, 0, 2.5], fov = 25 }) => (
   
