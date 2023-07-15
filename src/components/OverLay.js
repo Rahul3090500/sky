@@ -5,6 +5,8 @@ import { Logo } from '@pmndrs/branding'
 import { useSnapshot } from 'valtio'
 import { state } from './store'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ChromePicker } from 'react-color';
+import { useState } from 'react'
 
 export default function Overlay() {
   const snap = useSnapshot(state)
@@ -67,21 +69,41 @@ function Intro({ config }) {
 
 function Customizer({ config }) {
   const snap = useSnapshot(state)
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
+  const handleColorChange = (color) => {
+    state.selectedColor = color.hex;
+  };
   return (
     <motion.section {...config}>
       <div className="customizer">
-        <div className="color-options">
+      <div className="color-options">
           {snap.colors.map((color) => (
             <div
               key={color}
               className="circle"
-              style={{ background: color,zIndex:"99",position:"relative" }}
-              onClick={() => (state.selectedColor = color)}></div>
+              style={{ background: color, zIndex: "999", position: "relative" }}
+              onClick={() => (state.selectedColor = color)}
+            ></div>
           ))}
+          <div
+            className="circle"
+            style={{
+              background: snap.selectedColor,
+              zIndex: "999",
+              position: "relative",
+            }}
+            onClick={() => setShowColorPicker(true)}
+          ></div>
+        
         </div>
+        {showColorPicker && (
+            <div className="color-picker" style={{zIndex:"99",position:"absolute",bottom:"10%",right:"1%", }}>
+              <ChromePicker color={snap.selectedColor} onChange={handleColorChange} />
+            </div>
+          )}
 
-        {/* <div className="decals">
+        <div className="decals" style={{zIndex:"9"}}>
           <div className="decals--container">
             {snap.decals.map((decal) => (
               <div
@@ -92,7 +114,7 @@ function Customizer({ config }) {
               </div>
             ))}
           </div>
-        </div> */}
+        </div>
 
         <button
           className="share"

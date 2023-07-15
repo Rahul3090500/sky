@@ -237,3 +237,15 @@ button:hover {
     left: 0;
   }
 }
+@media only screen and (min-width: 320px) and (max-width: 600px) {
+  .section--container {
+
+  z-index: 99;
+  }
+  .canvas {
+    /* position: absolute; */
+  }
+  .shirt {
+    scale: .5;
+  }
+}

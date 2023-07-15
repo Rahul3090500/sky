@@ -1,13 +1,15 @@
 "use client";
-
-import { proxy } from 'valtio'
+import { proxy } from 'valtio';
 
 const state = proxy({
   intro: true,
   colors: ['#ccc', '#EFBD4E', '#80C670', '#726DE8', '#EF674E', '#353934'],
-  decals: ['react', 'three2', 'pmndrs'],
+  decals: [ 'r','s'], // Add the existing decals here
   selectedColor: '#EFBD4E',
-  selectedDecal: 'three2'
-})
+  selectedDecal: 's', // Set the default selected decal
 
-export { state }
+  // Add a new property to store local image URLs
+  localDecals: [],
+});
+
+export { state };
