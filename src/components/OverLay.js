@@ -86,6 +86,7 @@ function Customizer({ config }) {
               onClick={() => (state.selectedColor = color)}
             ></div>
           ))}
+          
           <div
             className="circle"
             style={{

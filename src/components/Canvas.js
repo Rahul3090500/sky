@@ -150,6 +150,7 @@ function Shirt(props) {
         onPointerOut={(e) => (document.body.style.cursor = 'auto')}
       >
         {name}
+        
       </Text>
     </mesh>
   );
@@ -231,11 +232,13 @@ function CameraRig({ children }) {
     );
   });
 
+
   return (
     <group ref={group} onWheel={handleWheel}>
       {children}
     </group>
   );
+  
 }
 
 
